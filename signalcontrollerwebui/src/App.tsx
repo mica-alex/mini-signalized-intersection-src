@@ -79,17 +79,15 @@ export const App: React.FunctionComponent = () => {
             <BodySection title={"Signals"} wide horizontal>
               <PedestrianSignal walk={signalState.lampPrimaryWalk}
                                 dontWalk={signalState.lampPrimaryDontWalk}/>
-              <TrafficSignalBody>
-                <TrafficSignalBulb color={"red"} powered={signalState.lampSecondaryRed}/>
-                <TrafficSignalBulb color={"yellow"} powered={signalState.lampSecondaryYellow}/>
-                <TrafficSignalBulb color={"green"} powered={signalState.lampSecondaryGreen} thruArrow/>
+              <TrafficSignalBody small>
+                <TrafficSignalBulb small color={"red"} powered={signalState.lampSecondaryRed}/>
+                <TrafficSignalBulb small color={"yellow"} powered={signalState.lampSecondaryYellow}/>
+                <TrafficSignalBulb small color={"green"} powered={signalState.lampSecondaryGreen} thruArrow/>
               </TrafficSignalBody>
               <TrafficSignalBody>
-                <TrafficSignalBulb color={"red"} powered={signalState.lampPrimaryRed}/>
-                <TrafficSignalBulb color={"yellow"} powered={signalState.lampPrimaryYellow}/>
-                <TrafficSignalBulb color={"yellow"} powered={signalState.lampPrimaryYellowArrow}
-                                   rightArrow/>
-                <TrafficSignalBulb color={"green"} powered={signalState.lampPrimaryGreenArrow} rightArrow/>
+                <TrafficSignalBulb color={"red"} powered={signalState.lampPrimaryRed} bicycle/>
+                <TrafficSignalBulb color={"yellow"} powered={signalState.lampPrimaryYellow} bicycle/>
+                <TrafficSignalBulb color={"green"} powered={signalState.lampPrimaryGreenArrow} bicycle/>
               </TrafficSignalBody>
             </BodySection>
             <BodySection title={"Control"}>

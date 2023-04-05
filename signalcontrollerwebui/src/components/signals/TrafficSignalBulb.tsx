@@ -10,25 +10,44 @@ export const trafficSignalBulbStyles: CSSProperties = {
     padding: '0',
 };
 
+export const trafficSignalBulbSmallStyles: CSSProperties = {
+    height: '40px',
+    width: '40px',
+    borderRadius: '50%',
+    fontSize: '40px',
+    margin: '0',
+    padding: '0',
+};
+
 export interface TrafficSignalBulbProps {
     color: string;
     powered: boolean;
+    small?: boolean;
     leftArrow?: boolean;
     rightArrow?: boolean;
     thruArrow?: boolean;
+    bicycle?: boolean;
 }
 
-export const TrafficSignalBulb = ({color, powered, leftArrow, rightArrow, thruArrow}: TrafficSignalBulbProps) => {
+export const TrafficSignalBulb = ({
+                                      color,
+                                      powered,
+                                      small,
+                                      leftArrow,
+                                      rightArrow,
+                                      thruArrow,
+                                      bicycle
+                                  }: TrafficSignalBulbProps) => {
     let unpoweredColor = '#111';
     let lessUnpoweredColor = '#222';
-    if (leftArrow || rightArrow || thruArrow) {
+    let desiredStyles = small ? trafficSignalBulbSmallStyles : trafficSignalBulbStyles;
+    if (leftArrow || rightArrow || thruArrow || bicycle) {
         return (
             <Stack.Item>
-                <Stack style={{...trafficSignalBulbStyles, backgroundColor: unpoweredColor}}
+                <Stack style={{...desiredStyles, backgroundColor: unpoweredColor}}
                        verticalAlign={"center"} horizontalAlign={"center"}>
                     {leftArrow &&
-                        <svg fill={powered ? color : lessUnpoweredColor} viewBox="3.008 1.753 40 33.876" width="40"
-                             height="33.876">
+                        <svg fill={powered ? color : lessUnpoweredColor} viewBox="3.008 1.753 40 33.876" width={"70%"} height={"70%"}>
                             <g id="SVGRepo_iconCarrier"
                                transform="matrix(-1.284416, 0, 0, -1.284416, 43.007634, 38.690763)">
                                 <g>
@@ -41,8 +60,7 @@ export const TrafficSignalBulb = ({color, powered, leftArrow, rightArrow, thruAr
                             </g>
                         </svg>}
                     {rightArrow &&
-                        <svg fill={powered ? color : lessUnpoweredColor} viewBox="3.008 1.753 40 36.938" width="40"
-                             height="36.938">
+                        <svg fill={powered ? color : lessUnpoweredColor} viewBox="3.008 1.753 40 36.938" width={"70%"} height={"70%"}>
                             <g id="SVGRepo_bgCarrier" strokeWidth="0"
                                transform="matrix(1.284416, 0, 0, 1.284416, 3.007648, 1.752855)"></g>
                             <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"
@@ -59,8 +77,7 @@ export const TrafficSignalBulb = ({color, powered, leftArrow, rightArrow, thruAr
                             </g>
                         </svg>}
                     {thruArrow &&
-                        <svg fill={powered ? color : lessUnpoweredColor} viewBox="4.539 0.222 36.938 40" width="36.938"
-                             height="40">
+                        <svg fill={powered ? color : lessUnpoweredColor} viewBox="4.539 0.222 36.938 40" width={"70%"} height={"70%"}>
                             <g id="SVGRepo_bgCarrier" strokeWidth="0"
                                transform="matrix(0, -1.284416, 1.284416, 0, 4.53869, 40.221803)"></g>
                             <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"
@@ -76,13 +93,18 @@ export const TrafficSignalBulb = ({color, powered, leftArrow, rightArrow, thruAr
                                 </g>
                             </g>
                         </svg>}
+                    {bicycle &&
+                        <svg fill={powered ? color : lessUnpoweredColor} viewBox="0 0 34.98 21.039" width={"70%"} height={"70%"}>
+                            <path style={{stroke: "none", fillRule: "evenodd"}}
+                                  d="M 22.898438 14.441406 L 27.476562 13.667969 L 24.589844 9.777344 C 23.09375 11.128906 22.90625 12.753906 22.898438 14.441406 Z M 21.636719 14.726562 C 21.628906 14.558594 21.605469 14.289062 21.605469 14.097656 C 21.605469 12.171875 22.203125 10.300781 23.832031 8.746094 L 22.136719 6.640625 L 19.511719 14.953125 Z M 11.558594 6.457031 L 11.707031 5.992188 L 21.058594 5.980469 L 18.570312 13.804688 L 18.460938 12.988281 L 18.75 12.988281 L 18.710938 12.46875 L 17.460938 12.46875 L 17.496094 12.953125 L 17.816406 12.953125 L 17.890625 13.84375 C 17.890625 13.84375 11.597656 6.492188 11.558594 6.457031 Z M 7.417969 13.972656 C 8.675781 12.9375 9.652344 11.953125 10.355469 9.976562 C 11.46875 11.023438 12.105469 12.539062 12.105469 14.097656 C 12.105469 17.195312 9.671875 19.71875 6.6875 19.71875 C 3.707031 19.71875 1.273438 17.195312 1.273438 14.097656 C 1.273438 11.003906 3.707031 8.476562 6.6875 8.476562 C 7.640625 8.476562 8.613281 8.761719 9.398438 9.242188 C 8.867188 10.984375 8.351562 11.882812 6.714844 13.25 C 6.320312 13.265625 6.019531 13.597656 6.019531 13.992188 C 6.019531 14.402344 6.339844 14.734375 6.734375 14.734375 C 7.125 14.734375 7.417969 14.402344 7.417969 13.972656 Z M 23.089844 15.636719 C 23.699219 18.007812 25.878906 19.71875 28.292969 19.71875 C 31.273438 19.71875 33.707031 17.195312 33.707031 14.097656 C 33.707031 11.003906 31.273438 8.476562 28.292969 8.476562 C 27.339844 8.476562 26.238281 8.710938 25.433594 9.199219 L 28.375 13.25 C 28.734375 13.253906 29.046875 13.589844 29.046875 13.992188 C 29.046875 14.402344 28.726562 14.734375 28.332031 14.734375 C 28.222656 14.734375 28.109375 14.707031 28.011719 14.65625 Z M 9.785156 7.941406 L 11.703125 2.449219 L 11.09375 1.375 L 12.3125 0 L 14.921875 0 L 14.957031 0.78125 L 12.667969 0.78125 L 12.203125 1.300781 L 12.742188 2.300781 L 12.066406 4.78125 L 21.433594 4.78125 L 21.578125 4.328125 C 20.824219 4.226562 19.527344 3.746094 19.214844 3.464844 C 18.90625 3.1875 19.175781 2.929688 19.53125 2.917969 C 21.378906 2.835938 24.125 2.675781 24.648438 2.671875 C 25.171875 2.667969 25.222656 2.941406 24.875 3.339844 C 24.523438 3.734375 24.21875 4.09375 22.894531 4.304688 L 22.539062 5.308594 L 24.753906 8.15625 C 25.800781 7.5 27.0625 7.15625 28.292969 7.15625 C 31.976562 7.15625 34.980469 10.273438 34.980469 14.097656 C 34.980469 17.921875 31.976562 21.039062 28.292969 21.039062 C 25.261719 21.039062 22.597656 18.871094 21.8125 15.871094 L 19.777344 16.253906 C 19.6875 16.5 19.484375 16.691406 19.242188 16.84375 L 19.605469 18.632812 L 20.070312 18.632812 L 20.105469 19.113281 L 18.640625 19.1875 L 18.640625 18.667969 L 19 18.667969 L 18.554688 16.878906 C 17.894531 16.769531 17.550781 16.183594 17.746094 15.601562 L 11.09375 7.792969 L 10.796875 8.628906 C 12.410156 9.949219 13.375 11.984375 13.375 14.097656 C 13.375 17.921875 10.371094 21.039062 6.6875 21.039062 C 3.003906 21.039062 0 17.921875 0 14.097656 C 0 10.273438 3.003906 7.15625 6.6875 7.15625 C 7.757812 7.15625 8.855469 7.429688 9.785156 7.941406 Z M 9.785156 7.941406 "></path>
+                        </svg>}
                 </Stack>
             </Stack.Item>
         );
     } else {
         return (
             <Stack.Item>
-                <div style={{...trafficSignalBulbStyles, backgroundColor: powered ? color : unpoweredColor}}/>
+                <div style={{...desiredStyles, backgroundColor: powered ? color : unpoweredColor}}/>
             </Stack.Item>
         );
     }
