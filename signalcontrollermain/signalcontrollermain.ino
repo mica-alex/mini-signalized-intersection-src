@@ -27,6 +27,7 @@ const int point_primaryDontWalk = 2;    // PLC Slot Point for Primary Don't Walk
 const int point_secondaryGreen = 5;     // PLC Slot Point for Secondary Green
 const int point_secondaryYellow = 4;    // PLC Slot Point for Secondary Yellow
 const int point_secondaryRed = 3;       // PLC Slot Point for Secondary Red
+const int point_beacon = 2;             // PLC Slot Point for Beacon
 
 ///////// GPIO CONSTANTS /////////
 const int gpio_primaryWalkButton = 4;         // GPIO Pin Index for Approach 1 Walk Button
@@ -63,53 +64,119 @@ void setPointPower(int power, int slot, int point) {
   state_powerStatus[slot - 1][point - 1] = power;
 }
 
+void requestWalkCmd(Request &req, Response &res) {
+  state_isWalkRequested = true;
+  respondCmdSuccess(req, res);
+}
+
 void enablePedCmd(Request &req, Response &res) {
   state_isPedEnabled = true;
-  P(enablePed) =
-    "{\"success\":\"true\"}";
-  res.set("Content-Type", "application/json");
-  res.set("Access-Control-Allow-Origin", "*");
-  res.printP(enablePed);
-  res.end();
+  respondCmdSuccess(req, res);
 }
 
 void disablePedCmd(Request &req, Response &res) {
   state_isPedEnabled = false;
-  P(disablePed) =
-    "{\"success\":\"true\"}";
-  res.set("Content-Type", "application/json");
-  res.set("Access-Control-Allow-Origin", "*");
-  res.printP(disablePed);
-  res.end();
+  respondCmdSuccess(req, res);
 }
 
 void enableBeaconCmd(Request &req, Response &res) {
   state_isBeaconEnabled = true;
-  P(enableBeacon) =
-    "{\"success\":\"true\"}";
-  res.set("Content-Type", "application/json");
-  res.set("Access-Control-Allow-Origin", "*");
-  res.printP(enableBeacon);
-  res.end();
+  setPointPower(HIGH, index_slot2, point_beacon);
+  respondCmdSuccess(req, res);
 }
 
 void disableBeaconCmd(Request &req, Response &res) {
   state_isBeaconEnabled = false;
-  P(disableBeacon) =
-    "{\"success\":\"true\"}";
+  setPointPower(LOW, index_slot2, point_beacon);
+  respondCmdSuccess(req, res);
+}
+
+void enableFlashCmd(Request &req, Response &res) {
+  state_isFlashMode = true;
+  state_forcedOffMode = false;
+  state_forcedRedMode = false;
+  state_forcedYellowMode = false;
+  state_forcedGreenMode = false;
+  state_isBeaconEnabled = false;
+  respondCmdSuccess(req, res);
+}
+
+void disableFlashCmd(Request &req, Response &res) {
+  state_isFlashMode = false;
+  respondCmdSuccess(req, res);
+}
+
+void enableForcedOffCmd(Request &req, Response &res) {
+  state_forcedOffMode = true;
+  state_forcedRedMode = false;
+  state_forcedYellowMode = false;
+  state_forcedGreenMode = false;
+  state_isFlashMode = false;
+  state_isBeaconEnabled = false;
+  respondCmdSuccess(req, res);
+}
+
+void disableForcedOffCmd(Request &req, Response &res) {
+  state_forcedOffMode = false;
+  respondCmdSuccess(req, res);
+}
+
+void enableForcedRedCmd(Request &req, Response &res) {
+  state_forcedOffMode = false;
+  state_forcedRedMode = true;
+  state_forcedYellowMode = false;
+  state_forcedGreenMode = false;
+  state_isFlashMode = false;
+  state_isBeaconEnabled = false;
+  respondCmdSuccess(req, res);
+}
+
+void disableForcedRedCmd(Request &req, Response &res) {
+  state_forcedRedMode = false;
+  respondCmdSuccess(req, res);
+}
+
+void enableForcedYellowCmd(Request &req, Response &res) {
+  state_forcedOffMode = false;
+  state_forcedRedMode = false;
+  state_forcedYellowMode = true;
+  state_forcedGreenMode = false;
+  state_isFlashMode = false;
+  state_isBeaconEnabled = false;
+  respondCmdSuccess(req, res);
+}
+
+void disableForcedYellowCmd(Request &req, Response &res) {
+  state_forcedYellowMode = false;
+  respondCmdSuccess(req, res);
+}
+
+void enableForcedGreenCmd(Request &req, Response &res) {
+  state_forcedOffMode = false;
+  state_forcedRedMode = false;
+  state_forcedYellowMode = false;
+  state_forcedGreenMode = true;
+  state_isFlashMode = false;
+  state_isBeaconEnabled = false;
+  respondCmdSuccess(req, res);
+}
+
+void disableForcedGreenCmd(Request &req, Response &res) {
+  state_forcedGreenMode = false;
+  respondCmdSuccess(req, res);
+}
+
+void respondCmdSuccess(Request &req, Response &res) {
   res.set("Content-Type", "application/json");
   res.set("Access-Control-Allow-Origin", "*");
-  res.printP(disableBeacon);
+  res.print("{\"success\":\"true\"}");
   res.end();
 }
 
-void requestWalkCmd(Request &req, Response &res) {
-  state_isWalkRequested = true;
-  P(requestWalk) =
-    "{\"success\":\"true\"}";
+void respondCmdFailure(Request &req, Response &res) {
   res.set("Content-Type", "application/json");
   res.set("Access-Control-Allow-Origin", "*");
-  res.printP(requestWalk);
+  res.print("{\"success\":\"false\"}");
   res.end();
 }
 
@@ -139,7 +206,7 @@ void getStateCmd(Request &req, Response &res) {
   res.print(",\"pedEnabled\":");
   res.print(state_isPedEnabled ? "true" : "false");
   res.print(",\"statePhaseFlash\":");
-  res.print(state_phaseFlash );
+  res.print(state_phaseFlash);
   res.print(",\"statePhaseIndex\":");
   res.print(state_phaseIndex);
   res.print(",\"statePhaseMaxIndex\":");
@@ -176,8 +243,18 @@ void setup() {
   app.get("/requestWalk", &requestWalkCmd);
   app.get("/enablePed", &enablePedCmd);
   app.get("/disablePed", &disablePedCmd);
-  app.get("/enableBeacon", &enablePedCmd);
-  app.get("/disableBeacon", &disablePedCmd);
+  app.get("/enableBeacon", &enableBeaconCmd);
+  app.get("/disableBeacon", &disableBeaconCmd);
+  app.get("/enableFlash", &enableFlashCmd);
+  app.get("/disableFlash", &disableFlashCmd);
+  app.get("/enableForcedOffMode", &enableForcedOffCmd);
+  app.get("/disableForcedOffMode", &disableForcedOffCmd);
+  app.get("/enableForcedRedMode", &enableForcedRedCmd);
+  app.get("/disableForcedRedMode", &disableForcedRedCmd);
+  app.get("/enableForcedYellowMode", &enableForcedYellowCmd);
+  app.get("/disableForcedYellowMode", &disableForcedYellowCmd);
+  app.get("/enableForcedGreenMode", &enableForcedGreenCmd);
+  app.get("/disableForcedGreenMode", &disableForcedGreenCmd);
   app.get("/getState", &getStateCmd);
 
   // Configure GPIO pin modes
@@ -215,8 +292,24 @@ void setup() {
 
 ///////// LOOP METHOD /////////
 void loop() {
+  // Forced Off Mode
+  if (state_forcedOffMode) {
+    setOffPhase();
+  }
+  // Forced Red Mode
+  else if (state_forcedRedMode) {
+    setAllRedPhaseWithDontWalkOrBike();
+  }
+  // Forced Yellow Mode
+  else if (state_forcedYellowMode) {
+    setYellowPhase();
+  }
+  // Forced Green Mode
+  else if (state_forcedGreenMode) {
+    setGreenPhase();
+  }
   // Flash Mode
-  if (state_isFlashMode) {
+  else if (state_isFlashMode) {
     if (state_phaseFlash) {
       setFlashPhase();
     } else {
@@ -367,6 +460,7 @@ void setGreenPhase() {
   setPointPower(LOW, index_slot1, point_primaryYellow);
   setPointPower(LOW, index_slot1, point_primaryArrowAmber);
   setPointPower(LOW, index_slot2, point_primaryArrowGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
 }
 
 ///////// YELLOW PHASE METHOD /////////
@@ -380,6 +474,7 @@ void setYellowPhase() {
   setPointPower(LOW, index_slot1, point_primaryYellow);
   setPointPower(LOW, index_slot1, point_primaryArrowAmber);
   setPointPower(LOW, index_slot2, point_primaryArrowGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
 }
 
 ///////// ALL RED PHASE (WALK/BIKE) METHOD /////////
@@ -393,6 +488,7 @@ void setAllRedPhaseWithBikeWithWalk() {
   setPointPower(LOW, index_slot1, point_primaryYellow);
   setPointPower(LOW, index_slot1, point_primaryArrowAmber);
   setPointPower(HIGH, index_slot2, point_primaryArrowGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
 }
 
 ///////// ALL RED PHASE (WALK/YELLOW BIKE) METHOD /////////
@@ -406,6 +502,7 @@ void setAllRedPhaseWithYellowBikeWithWalk() {
   setPointPower(HIGH, index_slot1, point_primaryYellow);
   setPointPower(LOW, index_slot1, point_primaryArrowAmber);
   setPointPower(LOW, index_slot2, point_primaryArrowGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
 }
 
 ///////// ALL RED PHASE (DONT WALK OR BIKE) METHOD /////////
@@ -419,6 +516,7 @@ void setAllRedPhaseWithDontWalkOrBike() {
   setPointPower(LOW, index_slot1, point_primaryYellow);
   setPointPower(LOW, index_slot1, point_primaryArrowAmber);
   setPointPower(LOW, index_slot2, point_primaryArrowGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
 }
 
 ///////// ALL RED PHASE (GREEN BIKE WITH DONT WALK) METHOD /////////
@@ -432,6 +530,7 @@ void setAllRedPhaseWithBikeWithDontWalk() {
   setPointPower(LOW, index_slot1, point_primaryYellow);
   setPointPower(LOW, index_slot1, point_primaryArrowAmber);
   setPointPower(HIGH, index_slot2, point_primaryArrowGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
 }
 
 ///////// ALL RED PHASE (DONT WALK W/ YELLOW BIKE) METHOD /////////
@@ -445,6 +544,7 @@ void setAllRedPhaseWithYellowBikeWithDontWalk() {
   setPointPower(HIGH, index_slot1, point_primaryYellow);
   setPointPower(LOW, index_slot1, point_primaryArrowAmber);
   setPointPower(LOW, index_slot2, point_primaryArrowGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
 }
 
 ///////// ALL RED PHASE (WITH BIKE, WITHOUT WALK/DONT WALK) METHOD /////////
@@ -458,6 +558,7 @@ void setAllRedPhaseWithBikeWithoutWalk() {
   setPointPower(LOW, index_slot1, point_primaryYellow);
   setPointPower(LOW, index_slot1, point_primaryArrowAmber);
   setPointPower(HIGH, index_slot2, point_primaryArrowGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
 }
 
 ///////// ALL RED PHASE (WITH YELLOW BIKE, WITHOUT WALK/DONT WALK) METHOD /////////
@@ -471,6 +572,7 @@ void setAllRedPhaseWithYellowBikeWithoutWalk() {
   setPointPower(HIGH, index_slot1, point_primaryYellow);
   setPointPower(LOW, index_slot1, point_primaryArrowAmber);
   setPointPower(LOW, index_slot2, point_primaryArrowGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
 }
 
 ///////// FLASH PHASE METHOD /////////
@@ -484,6 +586,7 @@ void setFlashPhase() {
   setPointPower(LOW, index_slot1, point_primaryYellow);
   setPointPower(LOW, index_slot1, point_primaryArrowAmber);
   setPointPower(LOW, index_slot2, point_primaryArrowGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
 }
 
 ///////// OFF PHASE METHOD /////////
@@ -497,4 +600,5 @@ void setOffPhase() {
   setPointPower(LOW, index_slot1, point_primaryYellow);
   setPointPower(LOW, index_slot1, point_primaryArrowAmber);
   setPointPower(LOW, index_slot2, point_primaryArrowGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
 }
