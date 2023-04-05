@@ -71,23 +71,25 @@ void requestWalkCmd(Request &req, Response &res) {
 
 void enablePedCmd(Request &req, Response &res) {
   state_isPedEnabled = true;
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
 void disablePedCmd(Request &req, Response &res) {
   state_isPedEnabled = false;
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
 void enableBeaconCmd(Request &req, Response &res) {
   state_isBeaconEnabled = true;
-  setPointPower(HIGH, index_slot2, point_beacon);
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
 void disableBeaconCmd(Request &req, Response &res) {
   state_isBeaconEnabled = false;
-  setPointPower(LOW, index_slot2, point_beacon);
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
@@ -98,11 +100,13 @@ void enableFlashCmd(Request &req, Response &res) {
   state_forcedYellowMode = false;
   state_forcedGreenMode = false;
   state_isBeaconEnabled = false;
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
 void disableFlashCmd(Request &req, Response &res) {
   state_isFlashMode = false;
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
@@ -113,11 +117,13 @@ void enableForcedOffCmd(Request &req, Response &res) {
   state_forcedGreenMode = false;
   state_isFlashMode = false;
   state_isBeaconEnabled = false;
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
 void disableForcedOffCmd(Request &req, Response &res) {
   state_forcedOffMode = false;
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
@@ -128,11 +134,13 @@ void enableForcedRedCmd(Request &req, Response &res) {
   state_forcedGreenMode = false;
   state_isFlashMode = false;
   state_isBeaconEnabled = false;
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
 void disableForcedRedCmd(Request &req, Response &res) {
   state_forcedRedMode = false;
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
@@ -143,11 +151,13 @@ void enableForcedYellowCmd(Request &req, Response &res) {
   state_forcedGreenMode = false;
   state_isFlashMode = false;
   state_isBeaconEnabled = false;
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
 void disableForcedYellowCmd(Request &req, Response &res) {
   state_forcedYellowMode = false;
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
@@ -158,11 +168,13 @@ void enableForcedGreenCmd(Request &req, Response &res) {
   state_forcedGreenMode = true;
   state_isFlashMode = false;
   state_isBeaconEnabled = false;
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
 void disableForcedGreenCmd(Request &req, Response &res) {
   state_forcedGreenMode = false;
+  resetToStartPhase();
   respondCmdSuccess(req, res);
 }
 
@@ -178,6 +190,12 @@ void respondCmdFailure(Request &req, Response &res) {
   res.set("Access-Control-Allow-Origin", "*");
   res.print("{\"success\":\"false\"}");
   res.end();
+}
+
+void resetToStartPhase() {
+  state_lastTime = 0;
+  state_phaseFlash = true;
+  state_phaseIndex = 0;
 }
 
 void getStateCmd(Request &req, Response &res) {
