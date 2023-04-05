@@ -40,8 +40,6 @@ const int application_loopRateMs = signal_flashRateMs;  // Rate of application l
 ///////// NETWORK VARIABLES /////////
 byte ethernet_macAddress[] = { 0x16, 0x75, 0x3F, 0x83, 0x22, 0xE9 };
 byte ethernet_ip[] = { 10, 0, 0, 1 };
-byte ethernet_dns[] = { 10, 0, 0, 2 };
-byte ethernet_gw[] = { 10, 0, 0, 2 };
 EthernetServer server(80);
 Application app;
 
@@ -174,7 +172,7 @@ void setup() {
   setPointPower(LOW, index_slot1, point_secondaryYellow);
   setPointPower(LOW, index_slot1, point_secondaryGreen);
   delay(10000);
-  Ethernet.begin(ethernet_macAddress, ethernet_ip, ethernet_dns, ethernet_gw);
+  Ethernet.begin(ethernet_macAddress, ethernet_ip);
   app.get("/requestWalk", &requestWalkCmd);
   app.get("/enablePed", &enablePedCmd);
   app.get("/disablePed", &disablePedCmd);

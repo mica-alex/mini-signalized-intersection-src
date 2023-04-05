@@ -37,8 +37,8 @@ The following additional dependent libraries must also be installed:
 A static IP address is required for the PLC to communicate with the Raspberry Pi hosting the `signalcontrollerwebui`
 component.
 
-The default IP address assigned is `10.0.0.1` (IP address of PLC), and the default gateway + DNS server is `10.0.0.2`
-(IP address of Raspberry Pi). If desired, these values may be modified in the `signalcontrollermain.ino` file.
+The default IP address assigned is `10.0.0.1` (IP address of PLC). If desired, this value may be modified in
+the `signalcontrollermain.ino` file.
 
 ### SIGNALCONTROLLERWEBUI
 
