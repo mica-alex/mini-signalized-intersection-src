@@ -61,17 +61,28 @@ export const enableForcedGreenMode = async () => {
 }
 export const getState = async () => {
     let stateJson = await doAdvancedRequest('/getState');
-    let state = ApiState.fromJson(stateJson);
-    return state;
+    return ApiState.fromJson(stateJson);
 }
 
+const fetchWithTimeout = async (url: string, opts = {}, timeout = 5000) => {
+    // Create a signal with timeout
+    const signal = AbortSignal.timeout(timeout);
+
+    // Make the fetch request
+    const _fetchPromise = fetch(url, {
+        ...opts,
+        signal,
+    });
+
+    // Await the fetch with a catch in case it's aborted which signals an error
+    return await _fetchPromise;
+};
 
 const doBasicRequest = async (url: string) => {
     let success = true;
     let data: any = "";
     try {
-        const response = await fetch("http://trafficlightcontroller.iot.tacomano.micatechnologies.com:81" + url, {mode: 'cors'});
-        //const response = await fetch("http://"+window.location.host+":81"+url,{mode: 'cors'});
+        const response = await fetchWithTimeout("http://trafficlightcontroller.iot.tacomano.micatechnologies.com:81" + url, {mode: 'cors'}, 1000);
         data = JSON.parse(await response.text());
         if (data.success) {
             console.log("Request successful!");
@@ -89,8 +100,7 @@ const doBasicRequest = async (url: string) => {
 const doAdvancedRequest = async (url: string) => {
     let result = "";
     try {
-        const response = await fetch("http://trafficlightcontroller.iot.tacomano.micatechnologies.com:81" + url, {mode: 'cors'});
-        //const response = await fetch("http://"+window.location.host+":81"+url,{mode: 'cors'});
+        const response = await fetchWithTimeout("http://trafficlightcontroller.iot.tacomano.micatechnologies.com:81" + url, {mode: 'cors'}, 1000);
         const text = await response.text();
         result = JSON.parse(text);
     } catch (error) {
