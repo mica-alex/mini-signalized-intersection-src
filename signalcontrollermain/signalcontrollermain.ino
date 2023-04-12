@@ -477,7 +477,7 @@ void controllerExternalSwitchChange() {
 
 ///////// CONTROLLER EXTERNAL PULL CHANGE METHOD /////////
 void controllerExternalPullChange() {
-  state_isBeaconEnabled = digitalRead(gpio_controllerExternalPull);
+  state_isBeaconEnabled = !digitalRead(gpio_controllerExternalPull);
 }
 
 ///////// PRIMARY WALK BTN PRESSED (RISING) METHOD /////////
