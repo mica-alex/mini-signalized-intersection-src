@@ -325,6 +325,7 @@ void loop() {
     } else {
       setOffPhase();
     }
+    state_lastTime = 0;
   }
   // Forced Off Mode
   else if (state_forcedOffMode) {
@@ -349,6 +350,7 @@ void loop() {
     } else {
       setOffPhase();
     }
+    state_lastTime = 0;
   }
   // Standard (Non-Flash) Mode
   else {
