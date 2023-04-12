@@ -37,6 +37,7 @@ const int gpio_controllerOnboardSwitch = 31;  // GPIO Pin Index for Controller O
 
 ///////// APPLICATION CONSTANTS /////////
 const int application_loopRateMs = signal_flashRateMs;  // Rate of application loop (milliseconds)
+const int application_maxEthernetWaitMs = 30000;        // Maximum Wait Time for Ethernet Link (milliseconds)
 
 ///////// NETWORK VARIABLES /////////
 byte ethernet_macAddress[] = { 0x16, 0x75, 0x3F, 0x83, 0x22, 0xE9 };
@@ -83,13 +84,13 @@ void disablePedCmd(Request &req, Response &res) {
 
 void enableBeaconCmd(Request &req, Response &res) {
   state_isBeaconEnabled = true;
-  resetToStartPhase();
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
   respondCmdSuccess(req, res);
 }
 
 void disableBeaconCmd(Request &req, Response &res) {
   state_isBeaconEnabled = false;
-  resetToStartPhase();
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
   respondCmdSuccess(req, res);
 }
 
@@ -256,7 +257,14 @@ void setup() {
   setPointPower(HIGH, index_slot1, point_secondaryRed);
   setPointPower(LOW, index_slot1, point_secondaryYellow);
   setPointPower(LOW, index_slot1, point_secondaryGreen);
-  delay(10000);
+  int ethernetMaxWaitTime = millis() + application_maxEthernetWaitMs;
+  delay(1000);
+  while (Ethernet.linkStatus() != LinkON) {
+    delay(500);
+    if (millis() >= ethernetMaxWaitTime) {
+      break;
+    }
+  }
   Ethernet.begin(ethernet_macAddress, ethernet_ip);
   app.get("/requestWalk", &requestWalkCmd);
   app.get("/enablePed", &enablePedCmd);
@@ -294,7 +302,7 @@ void setup() {
   // Configure interrupts for applicable GPIO pins
   attachInterrupt(digitalPinToInterrupt(gpio_controllerOnboardSwitch), controllerOnboardSwitchChange, CHANGE);
   attachInterrupt(digitalPinToInterrupt(gpio_controllerExternalSwitch), controllerExternalSwitchChange, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(gpio_controllerExternalSwitch), controllerExternalPullChange, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(gpio_controllerExternalPull), controllerExternalPullChange, CHANGE);
   attachInterrupt(digitalPinToInterrupt(gpio_primaryWalkButton), primaryWalkButtonPressed, FALLING);
 
   // Set bootup finish light and delay shortly before starting
@@ -310,8 +318,16 @@ void setup() {
 
 ///////// LOOP METHOD /////////
 void loop() {
+  // Fault Mode (Forced Flash)
+  if (Ethernet.linkStatus() == Unknown || Ethernet.linkStatus() == LinkOFF) {
+    if (state_phaseFlash) {
+      setFlashPhase();
+    } else {
+      setOffPhase();
+    }
+  }
   // Forced Off Mode
-  if (state_forcedOffMode) {
+  else if (state_forcedOffMode) {
     setOffPhase();
   }
   // Forced Red Mode
