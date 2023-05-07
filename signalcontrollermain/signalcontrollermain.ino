@@ -37,7 +37,7 @@ const int gpio_controllerOnboardSwitch = 31;  // GPIO Pin Index for Controller O
 
 ///////// APPLICATION CONSTANTS /////////
 const int application_loopRateMs = signal_flashRateMs;  // Rate of application loop (milliseconds)
-const int application_maxEthernetWaitMs = 30000;        // Maximum Wait Time for Ethernet Link (milliseconds)
+const int application_ethernetWaitMs = 30000;           // Maximum Wait Time for Ethernet Link (milliseconds)
 
 ///////// NETWORK VARIABLES /////////
 byte ethernet_macAddress[] = { 0x16, 0x75, 0x3F, 0x83, 0x22, 0xE9 };
@@ -257,13 +257,20 @@ void setup() {
   setPointPower(HIGH, index_slot1, point_secondaryRed);
   setPointPower(LOW, index_slot1, point_secondaryYellow);
   setPointPower(LOW, index_slot1, point_secondaryGreen);
-  int ethernetMaxWaitTime = millis() + application_maxEthernetWaitMs;
-  delay(1000);
-  while (Ethernet.linkStatus() != LinkON) {
-    delay(500);
-    if (millis() >= ethernetMaxWaitTime) {
+  bool ethernetWaitAlternatingFlash = true;
+  unsigned long ethernetWaitTimeMin = millis() + 15000;
+  unsigned long ethernetWaitTime = millis() + application_ethernetWaitMs;
+  while (millis() < ethernetWaitTimeMin || Ethernet.linkStatus() != LinkON) {
+    if (ethernetWaitAlternatingFlash) {
+      setFlashPhase();
+    } else {
+      setOffPhase();
+    }
+    ethernetWaitAlternatingFlash = !ethernetWaitAlternatingFlash;
+    if (millis() >= ethernetWaitTime) {
       break;
     }
+    delay(500);
   }
   Ethernet.begin(ethernet_macAddress, ethernet_ip);
   app.get("/requestWalk", &requestWalkCmd);
