@@ -14,20 +14,26 @@ const int signal_minGreenTimeMs = 30000;       // Min Green Time for Approach 1 
 const int signal_maxGreenTimeMs = 180000;      // Max Green Time for Approach 1 (if -1, a trigger such as walk button is required to properly cycle) (Milliseconds)
 
 ///////// SIGNAL WIRING CONSTANTS /////////
-const int slotCount = 2;                // PLC Slot Count
-const int pointPerSlotCount = 8;        // PLC Point per Slot Count
-const int index_slot1 = 1;              // PLC Slot 1 Index
-const int index_slot2 = 2;              // PLC Slot 2 Index
-const int point_primaryArrowGreen = 1;  // PLC Slot Point for Primary Green Arrow
-const int point_primaryArrowAmber = 8;  // PLC Slot Point for Primary Yellow Arrow
-const int point_primaryYellow = 7;      // PLC Slot Point for Primary Yellow
-const int point_primaryRed = 6;         // PLC Slot Point for Primary Red
-const int point_primaryWalk = 1;        // PLC Slot Point for Primary Walk
-const int point_primaryDontWalk = 2;    // PLC Slot Point for Primary Don't Walk
-const int point_secondaryGreen = 5;     // PLC Slot Point for Secondary Green
-const int point_secondaryYellow = 4;    // PLC Slot Point for Secondary Yellow
-const int point_secondaryRed = 3;       // PLC Slot Point for Secondary Red
-const int point_beacon = 2;             // PLC Slot Point for Beacon
+const int slotCount = 2;           // PLC Slot Count
+const int pointPerSlotCount = 8;   // PLC Point per Slot Count
+const int slot_walk = 1;           // PLC Slot Index for Walk
+const int slot_dontWalk = 1;       // PLC Slot Index for Don't Walk
+const int slot_firstGreen = 1;     // PLC Slot Index for First Signal Green
+const int slot_firstYellow = 1;    // PLC Slot Index for First Signal Yellow
+const int slot_firstRed = 1;       // PLC Slot Index for First Signal Red
+const int slot_secondGreen = 1;    // PLC Slot Index for Second Signal Green
+const int slot_secondYellow = 1;   // PLC Slot Index for Second Signal Yellow
+const int slot_secondRed = 1;      // PLC Slot Index for Second Signal Red
+const int slot_beacon = 2;         // PLC Slot Index for Beacon
+const int point_walk = 1;          // PLC Slot Point Index for Walk
+const int point_dontWalk = 2;      // PLC Slot Point Index for Don't Walk
+const int point_firstGreen = 5;    // PLC Slot Point Index for First Signal Green
+const int point_firstYellow = 4;   // PLC Slot Point Index for First Signal Yellow
+const int point_firstRed = 3;      // PLC Slot Point Index for First Signal Red
+const int point_secondGreen = 8;   // PLC Slot Point Index for Second Signal Green
+const int point_secondYellow = 7;  // PLC Slot Point Index for Second Signal Yellow
+const int point_secondRed = 6;     // PLC Slot Point Index for Second Signal Red
+const int point_beacon = 1;        // PLC Slot Point Index for Beacon
 
 ///////// GPIO CONSTANTS /////////
 const int gpio_primaryWalkButton = 4;         // GPIO Pin Index for Approach 1 Walk Button
@@ -84,13 +90,13 @@ void disablePedCmd(Request &req, Response &res) {
 
 void enableBeaconCmd(Request &req, Response &res) {
   state_isBeaconEnabled = true;
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
   respondCmdSuccess(req, res);
 }
 
 void disableBeaconCmd(Request &req, Response &res) {
   state_isBeaconEnabled = false;
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
   respondCmdSuccess(req, res);
 }
 
@@ -254,9 +260,9 @@ void setup() {
   }
 
   // Configure ethernet port
-  setPointPower(HIGH, index_slot1, point_secondaryRed);
-  setPointPower(LOW, index_slot1, point_secondaryYellow);
-  setPointPower(LOW, index_slot1, point_secondaryGreen);
+  setPointPower(HIGH, slot_secondRed, point_secondRed);
+  setPointPower(LOW, slot_secondYellow, point_secondYellow);
+  setPointPower(LOW, slot_secondGreen, point_secondGreen);
   bool ethernetWaitAlternatingFlash = true;
   unsigned long ethernetWaitTimeMin = millis() + 15000;
   unsigned long ethernetWaitTime = millis() + application_ethernetWaitMs;
@@ -301,9 +307,9 @@ void setup() {
   state_isBeaconEnabled = !digitalRead(gpio_controllerExternalPull);
 
   // Set bootup light and delay shortly before attaching interrupt
-  setPointPower(LOW, index_slot1, point_secondaryRed);
-  setPointPower(HIGH, index_slot1, point_secondaryYellow);
-  setPointPower(LOW, index_slot1, point_secondaryGreen);
+  setPointPower(LOW, slot_secondRed, point_secondRed);
+  setPointPower(HIGH, slot_secondYellow, point_secondYellow);
+  setPointPower(LOW, slot_secondGreen, point_secondGreen);
   delay(1000);
 
   // Configure interrupts for applicable GPIO pins
@@ -313,9 +319,9 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(gpio_primaryWalkButton), primaryWalkButtonPressed, FALLING);
 
   // Set bootup finish light and delay shortly before starting
-  setPointPower(LOW, index_slot1, point_secondaryRed);
-  setPointPower(LOW, index_slot1, point_secondaryYellow);
-  setPointPower(HIGH, index_slot1, point_secondaryGreen);
+  setPointPower(LOW, slot_secondRed, point_secondRed);
+  setPointPower(LOW, slot_secondYellow, point_secondYellow);
+  setPointPower(HIGH, slot_secondGreen, point_secondGreen);
   delay(1000);
 
   // Set all red phase
@@ -494,154 +500,143 @@ void primaryWalkButtonPressed() {
 
 ///////// GREEN PHASE METHOD /////////
 void setGreenPhase() {
-  setPointPower(LOW, index_slot1, point_primaryWalk);
-  setPointPower(state_isPedEnabled ? HIGH : LOW, index_slot1, point_primaryDontWalk);
-  setPointPower(LOW, index_slot1, point_secondaryRed);
-  setPointPower(LOW, index_slot1, point_secondaryYellow);
-  setPointPower(HIGH, index_slot1, point_secondaryGreen);
-  setPointPower(HIGH, index_slot1, point_primaryRed);
-  setPointPower(LOW, index_slot1, point_primaryYellow);
-  setPointPower(LOW, index_slot1, point_primaryArrowAmber);
-  setPointPower(LOW, index_slot2, point_primaryArrowGreen);
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(LOW, slot_walk, point_walk);
+  setPointPower(state_isPedEnabled ? HIGH : LOW, slot_dontWalk, point_dontWalk);
+  setPointPower(LOW, slot_secondRed, point_secondRed);
+  setPointPower(LOW, slot_secondYellow, point_secondYellow);
+  setPointPower(HIGH, slot_secondGreen, point_secondGreen);
+  setPointPower(HIGH, slot_firstRed, point_firstRed);
+  setPointPower(LOW, slot_firstYellow, point_firstYellow);
+  setPointPower(LOW, slot_firstGreen, point_firstGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
 }
 
 ///////// YELLOW PHASE METHOD /////////
 void setYellowPhase() {
-  setPointPower(LOW, index_slot1, point_primaryWalk);
-  setPointPower(state_isPedEnabled ? HIGH : LOW, index_slot1, point_primaryDontWalk);
-  setPointPower(LOW, index_slot1, point_secondaryRed);
-  setPointPower(HIGH, index_slot1, point_secondaryYellow);
-  setPointPower(LOW, index_slot1, point_secondaryGreen);
-  setPointPower(HIGH, index_slot1, point_primaryRed);
-  setPointPower(LOW, index_slot1, point_primaryYellow);
-  setPointPower(LOW, index_slot1, point_primaryArrowAmber);
-  setPointPower(LOW, index_slot2, point_primaryArrowGreen);
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(LOW, slot_walk, point_walk);
+  setPointPower(state_isPedEnabled ? HIGH : LOW, slot_dontWalk, point_dontWalk);
+  setPointPower(LOW, slot_secondRed, point_secondRed);
+  setPointPower(HIGH, slot_secondYellow, point_secondYellow);
+  setPointPower(LOW, slot_secondGreen, point_secondGreen);
+  setPointPower(HIGH, slot_firstRed, point_firstRed);
+  setPointPower(LOW, slot_firstYellow, point_firstYellow);
+  setPointPower(LOW, slot_firstGreen, point_firstGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
 }
 
 ///////// ALL RED PHASE (WALK/BIKE) METHOD /////////
 void setAllRedPhaseWithBikeWithWalk() {
-  setPointPower(state_isPedEnabled ? HIGH : LOW, index_slot1, point_primaryWalk);
-  setPointPower(LOW, index_slot1, point_primaryDontWalk);
-  setPointPower(HIGH, index_slot1, point_secondaryRed);
-  setPointPower(LOW, index_slot1, point_secondaryYellow);
-  setPointPower(LOW, index_slot1, point_secondaryGreen);
-  setPointPower(LOW, index_slot1, point_primaryRed);
-  setPointPower(LOW, index_slot1, point_primaryYellow);
-  setPointPower(LOW, index_slot1, point_primaryArrowAmber);
-  setPointPower(HIGH, index_slot2, point_primaryArrowGreen);
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(state_isPedEnabled ? HIGH : LOW, slot_walk, point_walk);
+  setPointPower(LOW, slot_dontWalk, point_dontWalk);
+  setPointPower(HIGH, slot_secondRed, point_secondRed);
+  setPointPower(LOW, slot_secondYellow, point_secondYellow);
+  setPointPower(LOW, slot_secondGreen, point_secondGreen);
+  setPointPower(LOW, slot_firstRed, point_firstRed);
+  setPointPower(LOW, slot_firstYellow, point_firstYellow);
+  setPointPower(HIGH, slot_firstGreen, point_firstGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
 }
 
 ///////// ALL RED PHASE (WALK/YELLOW BIKE) METHOD /////////
 void setAllRedPhaseWithYellowBikeWithWalk() {
-  setPointPower(state_isPedEnabled ? HIGH : LOW, index_slot1, point_primaryWalk);
-  setPointPower(LOW, index_slot1, point_primaryDontWalk);
-  setPointPower(HIGH, index_slot1, point_secondaryRed);
-  setPointPower(LOW, index_slot1, point_secondaryYellow);
-  setPointPower(LOW, index_slot1, point_secondaryGreen);
-  setPointPower(LOW, index_slot1, point_primaryRed);
-  setPointPower(HIGH, index_slot1, point_primaryYellow);
-  setPointPower(LOW, index_slot1, point_primaryArrowAmber);
-  setPointPower(LOW, index_slot2, point_primaryArrowGreen);
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(state_isPedEnabled ? HIGH : LOW, slot_walk, point_walk);
+  setPointPower(LOW, slot_dontWalk, point_dontWalk);
+  setPointPower(HIGH, slot_secondRed, point_secondRed);
+  setPointPower(LOW, slot_secondYellow, point_secondYellow);
+  setPointPower(LOW, slot_secondGreen, point_secondGreen);
+  setPointPower(LOW, slot_firstRed, point_firstRed);
+  setPointPower(HIGH, slot_firstYellow, point_firstYellow);
+  setPointPower(LOW, slot_firstGreen, point_firstGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
 }
 
 ///////// ALL RED PHASE (DONT WALK OR BIKE) METHOD /////////
 void setAllRedPhaseWithDontWalkOrBike() {
-  setPointPower(LOW, index_slot1, point_primaryWalk);
-  setPointPower(state_isPedEnabled ? HIGH : LOW, index_slot1, point_primaryDontWalk);
-  setPointPower(HIGH, index_slot1, point_secondaryRed);
-  setPointPower(LOW, index_slot1, point_secondaryYellow);
-  setPointPower(LOW, index_slot1, point_secondaryGreen);
-  setPointPower(HIGH, index_slot1, point_primaryRed);
-  setPointPower(LOW, index_slot1, point_primaryYellow);
-  setPointPower(LOW, index_slot1, point_primaryArrowAmber);
-  setPointPower(LOW, index_slot2, point_primaryArrowGreen);
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(LOW, slot_walk, point_walk);
+  setPointPower(state_isPedEnabled ? HIGH : LOW, slot_dontWalk, point_dontWalk);
+  setPointPower(HIGH, slot_secondRed, point_secondRed);
+  setPointPower(LOW, slot_secondYellow, point_secondYellow);
+  setPointPower(LOW, slot_secondGreen, point_secondGreen);
+  setPointPower(HIGH, slot_firstRed, point_firstRed);
+  setPointPower(LOW, slot_firstYellow, point_firstYellow);
+  setPointPower(LOW, slot_firstGreen, point_firstGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
 }
 
 ///////// ALL RED PHASE (GREEN BIKE WITH DONT WALK) METHOD /////////
 void setAllRedPhaseWithBikeWithDontWalk() {
-  setPointPower(LOW, index_slot1, point_primaryWalk);
-  setPointPower(state_isPedEnabled ? HIGH : LOW, index_slot1, point_primaryDontWalk);
-  setPointPower(HIGH, index_slot1, point_secondaryRed);
-  setPointPower(LOW, index_slot1, point_secondaryYellow);
-  setPointPower(LOW, index_slot1, point_secondaryGreen);
-  setPointPower(LOW, index_slot1, point_primaryRed);
-  setPointPower(LOW, index_slot1, point_primaryYellow);
-  setPointPower(LOW, index_slot1, point_primaryArrowAmber);
-  setPointPower(HIGH, index_slot2, point_primaryArrowGreen);
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(LOW, slot_walk, point_walk);
+  setPointPower(state_isPedEnabled ? HIGH : LOW, slot_dontWalk, point_dontWalk);
+  setPointPower(HIGH, slot_secondRed, point_secondRed);
+  setPointPower(LOW, slot_secondYellow, point_secondYellow);
+  setPointPower(LOW, slot_secondGreen, point_secondGreen);
+  setPointPower(LOW, slot_firstRed, point_firstRed);
+  setPointPower(LOW, slot_firstYellow, point_firstYellow);
+  setPointPower(HIGH, slot_firstGreen, point_firstGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
 }
 
 ///////// ALL RED PHASE (DONT WALK W/ YELLOW BIKE) METHOD /////////
 void setAllRedPhaseWithYellowBikeWithDontWalk() {
-  setPointPower(LOW, index_slot1, point_primaryWalk);
-  setPointPower(state_isPedEnabled ? HIGH : LOW, index_slot1, point_primaryDontWalk);
-  setPointPower(HIGH, index_slot1, point_secondaryRed);
-  setPointPower(LOW, index_slot1, point_secondaryYellow);
-  setPointPower(LOW, index_slot1, point_secondaryGreen);
-  setPointPower(LOW, index_slot1, point_primaryRed);
-  setPointPower(HIGH, index_slot1, point_primaryYellow);
-  setPointPower(LOW, index_slot1, point_primaryArrowAmber);
-  setPointPower(LOW, index_slot2, point_primaryArrowGreen);
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(LOW, slot_walk, point_walk);
+  setPointPower(state_isPedEnabled ? HIGH : LOW, slot_dontWalk, point_dontWalk);
+  setPointPower(HIGH, slot_secondRed, point_secondRed);
+  setPointPower(LOW, slot_secondYellow, point_secondYellow);
+  setPointPower(LOW, slot_secondGreen, point_secondGreen);
+  setPointPower(LOW, slot_firstRed, point_firstRed);
+  setPointPower(HIGH, slot_firstYellow, point_firstYellow);
+  setPointPower(LOW, slot_firstGreen, point_firstGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
 }
 
 ///////// ALL RED PHASE (WITH BIKE, WITHOUT WALK/DONT WALK) METHOD /////////
 void setAllRedPhaseWithBikeWithoutWalk() {
-  setPointPower(LOW, index_slot1, point_primaryWalk);
-  setPointPower(LOW, index_slot1, point_primaryDontWalk);
-  setPointPower(HIGH, index_slot1, point_secondaryRed);
-  setPointPower(LOW, index_slot1, point_secondaryYellow);
-  setPointPower(LOW, index_slot1, point_secondaryGreen);
-  setPointPower(LOW, index_slot1, point_primaryRed);
-  setPointPower(LOW, index_slot1, point_primaryYellow);
-  setPointPower(LOW, index_slot1, point_primaryArrowAmber);
-  setPointPower(HIGH, index_slot2, point_primaryArrowGreen);
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(LOW, slot_walk, point_walk);
+  setPointPower(LOW, slot_dontWalk, point_dontWalk);
+  setPointPower(HIGH, slot_secondRed, point_secondRed);
+  setPointPower(LOW, slot_secondYellow, point_secondYellow);
+  setPointPower(LOW, slot_secondGreen, point_secondGreen);
+  setPointPower(LOW, slot_firstRed, point_firstRed);
+  setPointPower(LOW, slot_firstYellow, point_firstYellow);
+  setPointPower(HIGH, slot_firstGreen, point_firstGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
 }
 
 ///////// ALL RED PHASE (WITH YELLOW BIKE, WITHOUT WALK/DONT WALK) METHOD /////////
 void setAllRedPhaseWithYellowBikeWithoutWalk() {
-  setPointPower(LOW, index_slot1, point_primaryWalk);
-  setPointPower(LOW, index_slot1, point_primaryDontWalk);
-  setPointPower(HIGH, index_slot1, point_secondaryRed);
-  setPointPower(LOW, index_slot1, point_secondaryYellow);
-  setPointPower(LOW, index_slot1, point_secondaryGreen);
-  setPointPower(LOW, index_slot1, point_primaryRed);
-  setPointPower(HIGH, index_slot1, point_primaryYellow);
-  setPointPower(LOW, index_slot1, point_primaryArrowAmber);
-  setPointPower(LOW, index_slot2, point_primaryArrowGreen);
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(LOW, slot_walk, point_walk);
+  setPointPower(LOW, slot_dontWalk, point_dontWalk);
+  setPointPower(HIGH, slot_secondRed, point_secondRed);
+  setPointPower(LOW, slot_secondYellow, point_secondYellow);
+  setPointPower(LOW, slot_secondGreen, point_secondGreen);
+  setPointPower(LOW, slot_firstRed, point_firstRed);
+  setPointPower(HIGH, slot_firstYellow, point_firstYellow);
+  setPointPower(LOW, slot_firstGreen, point_firstGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
 }
 
 ///////// FLASH PHASE METHOD /////////
 void setFlashPhase() {
-  setPointPower(LOW, index_slot1, point_primaryWalk);
-  setPointPower(LOW, index_slot1, point_primaryDontWalk);
-  setPointPower(LOW, index_slot1, point_secondaryRed);
-  setPointPower(HIGH, index_slot1, point_secondaryYellow);
-  setPointPower(LOW, index_slot1, point_secondaryGreen);
-  setPointPower(HIGH, index_slot1, point_primaryRed);
-  setPointPower(LOW, index_slot1, point_primaryYellow);
-  setPointPower(LOW, index_slot1, point_primaryArrowAmber);
-  setPointPower(LOW, index_slot2, point_primaryArrowGreen);
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(LOW, slot_walk, point_walk);
+  setPointPower(LOW, slot_dontWalk, point_dontWalk);
+  setPointPower(LOW, slot_secondRed, point_secondRed);
+  setPointPower(HIGH, slot_secondYellow, point_secondYellow);
+  setPointPower(LOW, slot_secondGreen, point_secondGreen);
+  setPointPower(HIGH, slot_firstRed, point_firstRed);
+  setPointPower(LOW, slot_firstYellow, point_firstYellow);
+  setPointPower(LOW, slot_firstGreen, point_firstGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
 }
 
 ///////// OFF PHASE METHOD /////////
 void setOffPhase() {
-  setPointPower(LOW, index_slot1, point_primaryWalk);
-  setPointPower(LOW, index_slot1, point_primaryDontWalk);
-  setPointPower(LOW, index_slot1, point_secondaryRed);
-  setPointPower(LOW, index_slot1, point_secondaryYellow);
-  setPointPower(LOW, index_slot1, point_secondaryGreen);
-  setPointPower(LOW, index_slot1, point_primaryRed);
-  setPointPower(LOW, index_slot1, point_primaryYellow);
-  setPointPower(LOW, index_slot1, point_primaryArrowAmber);
-  setPointPower(LOW, index_slot2, point_primaryArrowGreen);
-  setPointPower(state_isBeaconEnabled ? HIGH : LOW, index_slot2, point_beacon);
+  setPointPower(LOW, slot_walk, point_walk);
+  setPointPower(LOW, slot_dontWalk, point_dontWalk);
+  setPointPower(LOW, slot_secondRed, point_secondRed);
+  setPointPower(LOW, slot_secondYellow, point_secondYellow);
+  setPointPower(LOW, slot_secondGreen, point_secondGreen);
+  setPointPower(LOW, slot_firstRed, point_firstRed);
+  setPointPower(LOW, slot_firstYellow, point_firstYellow);
+  setPointPower(LOW, slot_firstGreen, point_firstGreen);
+  setPointPower(state_isBeaconEnabled ? HIGH : LOW, slot_beacon, point_beacon);
 }

@@ -12,15 +12,14 @@ export class ApiState {
     public statePhaseMaxIndex: number = 6;
     public stateLastTime: number = 0;
     public stateIsBeaconEnabled: boolean = false;
-    public lampPrimaryWalk: boolean = false;
-    public lampPrimaryDontWalk: boolean = false;
-    public lampSecondaryRed: boolean = false;
-    public lampSecondaryYellow: boolean = false;
-    public lampSecondaryGreen: boolean = false;
-    public lampPrimaryRed: boolean = false;
-    public lampPrimaryYellow: boolean = false;
-    public lampPrimaryYellowArrow: boolean = false;
-    public lampPrimaryGreenArrow: boolean = false;
+    public lampWalk: boolean = false;
+    public lampDontWalk: boolean = false;
+    public lampSecondRed: boolean = false;
+    public lampSecondYellow: boolean = false;
+    public lampSecondGreen: boolean = false;
+    public lampFirstRed: boolean = false;
+    public lampFirstYellow: boolean = false;
+    public lampFirstGreen: boolean = false;
 
     static fromJson(json: any): ApiState {
         const state = new ApiState();
@@ -40,31 +39,28 @@ export class ApiState {
         for (let i = 0; i < state.lamps.length; i++) {
             let lamp = state.lamps[i];
             if (lamp.slot === 1 && lamp.channel === 1) {
-                state.lampPrimaryWalk = lamp.powered;
+                state.lampWalk = lamp.powered;
             }
             if (lamp.slot === 1 && lamp.channel === 2) {
-                state.lampPrimaryDontWalk = lamp.powered;
+                state.lampDontWalk = lamp.powered;
             }
             if (lamp.slot === 1 && lamp.channel === 3) {
-                state.lampSecondaryRed = lamp.powered;
+                state.lampFirstRed = lamp.powered;
             }
             if (lamp.slot === 1 && lamp.channel === 4) {
-                state.lampSecondaryYellow = lamp.powered;
+                state.lampFirstYellow = lamp.powered;
             }
             if (lamp.slot === 1 && lamp.channel === 5) {
-                state.lampSecondaryGreen = lamp.powered;
+                state.lampFirstGreen = lamp.powered;
             }
             if (lamp.slot === 1 && lamp.channel === 6) {
-                state.lampPrimaryRed = lamp.powered;
+                state.lampSecondRed = lamp.powered;
             }
             if (lamp.slot === 1 && lamp.channel === 7) {
-                state.lampPrimaryYellow = lamp.powered;
+                state.lampSecondYellow = lamp.powered;
             }
             if (lamp.slot === 1 && lamp.channel === 8) {
-                state.lampPrimaryYellowArrow = lamp.powered;
-            }
-            if (lamp.slot === 2 && lamp.channel === 1) {
-                state.lampPrimaryGreenArrow = lamp.powered;
+                state.lampSecondGreen = lamp.powered;
             }
         }
         return state;

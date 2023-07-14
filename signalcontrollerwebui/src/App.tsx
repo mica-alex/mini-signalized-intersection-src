@@ -79,18 +79,18 @@ export const App: React.FunctionComponent = () => {
                 { /* BODY */}
                 <AppBody>
                     <BodySection title={"Signals"} wide horizontal>
-                        <PedestrianSignal walk={signalState.lampPrimaryWalk}
-                                          dontWalk={signalState.lampPrimaryDontWalk}/>
+                        <PedestrianSignal walk={signalState.lampWalk}
+                                          dontWalk={signalState.lampDontWalk}/>
                         <TrafficSignalBody small>
-                            <TrafficSignalBulb small color={"red"} powered={signalState.lampSecondaryRed}/>
-                            <TrafficSignalBulb small color={"yellow"} powered={signalState.lampSecondaryYellow}/>
-                            <TrafficSignalBulb small color={"green"} powered={signalState.lampSecondaryGreen}
+                            <TrafficSignalBulb small color={"red"} powered={signalState.lampSecondRed}/>
+                            <TrafficSignalBulb small color={"yellow"} powered={signalState.lampSecondYellow}/>
+                            <TrafficSignalBulb small color={"green"} powered={signalState.lampSecondGreen}
                                                thruArrow/>
                         </TrafficSignalBody>
                         <TrafficSignalBody>
-                            <TrafficSignalBulb color={"red"} powered={signalState.lampPrimaryRed} bicycle/>
-                            <TrafficSignalBulb color={"yellow"} powered={signalState.lampPrimaryYellow} bicycle/>
-                            <TrafficSignalBulb color={"green"} powered={signalState.lampPrimaryGreenArrow} bicycle/>
+                            <TrafficSignalBulb color={"red"} powered={signalState.lampFirstRed} bicycle/>
+                            <TrafficSignalBulb color={"yellow"} powered={signalState.lampFirstYellow} bicycle/>
+                            <TrafficSignalBulb color={"green"} powered={signalState.lampFirstGreen} bicycle/>
                         </TrafficSignalBody>
                     </BodySection>
                     <BodySection title={"Control"}>
