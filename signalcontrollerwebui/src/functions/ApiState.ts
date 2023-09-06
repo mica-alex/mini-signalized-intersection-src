@@ -38,28 +38,28 @@ export class ApiState {
         if (json.stateIsBeaconEnabled) state.stateIsBeaconEnabled = json.stateIsBeaconEnabled;
         for (let i = 0; i < state.lamps.length; i++) {
             let lamp = state.lamps[i];
-            if (lamp.slot === 1 && lamp.channel === 1) {
+            if (lamp.slot === 2 && lamp.channel === 7) {
                 state.lampWalk = lamp.powered;
             }
-            if (lamp.slot === 1 && lamp.channel === 2) {
+            if (lamp.slot === 2 && lamp.channel === 8) {
                 state.lampDontWalk = lamp.powered;
             }
             if (lamp.slot === 1 && lamp.channel === 3) {
                 state.lampFirstRed = lamp.powered;
             }
-            if (lamp.slot === 1 && lamp.channel === 4) {
+            if (lamp.slot === 1 && lamp.channel === 2) {
                 state.lampFirstYellow = lamp.powered;
             }
-            if (lamp.slot === 1 && lamp.channel === 5) {
+            if (lamp.slot === 1 && lamp.channel === 1) {
                 state.lampFirstGreen = lamp.powered;
             }
-            if (lamp.slot === 1 && lamp.channel === 6) {
+            if (lamp.slot === 1 && lamp.channel === 7) {
                 state.lampSecondRed = lamp.powered;
             }
-            if (lamp.slot === 1 && lamp.channel === 7) {
+            if (lamp.slot === 1 && lamp.channel === 6) {
                 state.lampSecondYellow = lamp.powered;
             }
-            if (lamp.slot === 1 && lamp.channel === 8) {
+            if (lamp.slot === 1 && lamp.channel === 5) {
                 state.lampSecondGreen = lamp.powered;
             }
         }
