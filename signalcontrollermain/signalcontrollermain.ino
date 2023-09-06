@@ -16,24 +16,24 @@ const int signal_maxGreenTimeMs = 180000;      // Max Green Time for Approach 1 
 ///////// SIGNAL WIRING CONSTANTS /////////
 const int slotCount = 2;           // PLC Slot Count
 const int pointPerSlotCount = 8;   // PLC Point per Slot Count
-const int slot_walk = 1;           // PLC Slot Index for Walk
-const int slot_dontWalk = 1;       // PLC Slot Index for Don't Walk
+const int slot_walk = 2;           // PLC Slot Index for Walk
+const int slot_dontWalk = 2;       // PLC Slot Index for Don't Walk
 const int slot_firstGreen = 1;     // PLC Slot Index for First Signal Green
 const int slot_firstYellow = 1;    // PLC Slot Index for First Signal Yellow
 const int slot_firstRed = 1;       // PLC Slot Index for First Signal Red
 const int slot_secondGreen = 1;    // PLC Slot Index for Second Signal Green
 const int slot_secondYellow = 1;   // PLC Slot Index for Second Signal Yellow
 const int slot_secondRed = 1;      // PLC Slot Index for Second Signal Red
-const int slot_beacon = 2;         // PLC Slot Index for Beacon
-const int point_walk = 1;          // PLC Slot Point Index for Walk
-const int point_dontWalk = 2;      // PLC Slot Point Index for Don't Walk
-const int point_firstGreen = 5;    // PLC Slot Point Index for First Signal Green
-const int point_firstYellow = 4;   // PLC Slot Point Index for First Signal Yellow
+const int slot_beacon = 1;         // PLC Slot Index for Beacon
+const int point_walk = 7;          // PLC Slot Point Index for Walk
+const int point_dontWalk = 8;      // PLC Slot Point Index for Don't Walk
+const int point_firstGreen = 1;    // PLC Slot Point Index for First Signal Green
+const int point_firstYellow = 2;   // PLC Slot Point Index for First Signal Yellow
 const int point_firstRed = 3;      // PLC Slot Point Index for First Signal Red
-const int point_secondGreen = 8;   // PLC Slot Point Index for Second Signal Green
-const int point_secondYellow = 7;  // PLC Slot Point Index for Second Signal Yellow
-const int point_secondRed = 6;     // PLC Slot Point Index for Second Signal Red
-const int point_beacon = 1;        // PLC Slot Point Index for Beacon
+const int point_secondGreen = 5;   // PLC Slot Point Index for Second Signal Green
+const int point_secondYellow = 6;  // PLC Slot Point Index for Second Signal Yellow
+const int point_secondRed = 7;     // PLC Slot Point Index for Second Signal Red
+const int point_beacon = 4;        // PLC Slot Point Index for Beacon
 
 ///////// GPIO CONSTANTS /////////
 const int gpio_primaryWalkButton = 4;         // GPIO Pin Index for Approach 1 Walk Button
@@ -43,7 +43,7 @@ const int gpio_controllerOnboardSwitch = 31;  // GPIO Pin Index for Controller O
 
 ///////// APPLICATION CONSTANTS /////////
 const int application_loopRateMs = signal_flashRateMs;  // Rate of application loop (milliseconds)
-const int application_ethernetWaitMs = 30000;           // Maximum Wait Time for Ethernet Link (milliseconds)
+const int application_ethernetWaitMs = 120000;          // Maximum Wait Time for Ethernet Link (milliseconds)
 
 ///////// NETWORK VARIABLES /////////
 byte ethernet_macAddress[] = { 0x16, 0x75, 0x3F, 0x83, 0x22, 0xE9 };
@@ -479,23 +479,48 @@ void loop() {
 
 ///////// CONTROLLER ONBOARD SWITCH CHANGE METHOD /////////
 void controllerOnboardSwitchChange() {
+  Serial.println("Ped-enable state changing...");
+  Serial.println("Reading updated ped-enable state digital IO value...");
   state_isPedEnabled = digitalRead(gpio_controllerOnboardSwitch);
+  Serial.println("Read updated ped-enable state digital IO value (");
+  Serial.print(state_isPedEnabled ? "true" : "false");
+  Serial.println(").");
+  Serial.println("Writing reset start phase flag...");
+  resetToStartPhase();
+  Serial.println("Wrote reset start phase flag.");
+  Serial.println("Ped-enable state changed.");
 }
 
 ///////// CONTROLLER EXTERNAL SWITCH CHANGE METHOD /////////
 void controllerExternalSwitchChange() {
+  Serial.println("Flash state changing...");
+  Serial.println("Reading updated flash state digital IO value...");
   state_isFlashMode = digitalRead(gpio_controllerExternalSwitch);
-  state_phaseFlash = true;
+  Serial.print("Read updated flash state digital IO value (");
+  Serial.print(state_isFlashMode ? "true" : "false");
+  Serial.println(").");
+  Serial.println("Writing reset start phase flag...");
+  resetToStartPhase();
+  Serial.println("Wrote reset start phase flag.");
+  Serial.println("Flash state changed.");
 }
 
 ///////// CONTROLLER EXTERNAL PULL CHANGE METHOD /////////
 void controllerExternalPullChange() {
+  Serial.println("Beacon state changing...");
+  Serial.println("Reading updated beacon state digital IO value...");
   state_isBeaconEnabled = !digitalRead(gpio_controllerExternalPull);
+  Serial.print("Read updated beacon state digital IO value (");
+  Serial.print(state_isBeaconEnabled ? "true" : "false");
+  Serial.println(").");
+  Serial.println("Beacon state changed.");
 }
 
 ///////// PRIMARY WALK BTN PRESSED (RISING) METHOD /////////
 void primaryWalkButtonPressed() {
+  Serial.println("Walk request state changing...");
   state_isWalkRequested = true;
+  Serial.println("Walk request state set.");
 }
 
 ///////// GREEN PHASE METHOD /////////
