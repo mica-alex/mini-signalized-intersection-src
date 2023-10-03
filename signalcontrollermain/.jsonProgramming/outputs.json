@@ -1,0 +1,15 @@
+{
+  "1": {
+    "1": "Main/Green Ball",
+    "2": "Main/Yellow Ball",
+    "3": "Main/Red Ball",
+    "4": "NA/Emergency Beacon",
+    "5": "Secondary/Green Ball",
+    "6": "Secondary/Yellow Ball",
+    "7": "Secondary/Red Ball"
+  },
+  "2": {
+    "7": "NA/Walk (Man)",
+    "8": "NA/Don't Walk (Hand)"
+  }
+}
