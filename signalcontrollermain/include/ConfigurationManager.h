@@ -1,10 +1,14 @@
+#ifndef CONFIGURATION_MANAGER_H
+#define CONFIGURATION_MANAGER_H
+
 #include "ArduinoJson.h"
 #include "SD.h"
+#include "Constants.h"
 #include <SPI.h>
 
 class ConfigurationManager {
 public:
-    static void init();
+    static bool init();
 
     static bool loadOutputsConfig();
 
@@ -12,19 +16,41 @@ public:
 
     static JsonObject getOutputsConfig();
 
-    static bool setFriendlyName(int slot, int port, const char *friendlyName);
+    static bool setOutputFriendlyName(int slot, int port, const char *friendlyName);
 
-    static const char *getFriendlyName(int slot, int port);
+    static const char *getOutputFriendlyName(int slot, int port);
 
-    static bool setMultipleFriendlyNames(const int slots[], const int ports[], const char *friendlyNames[], int count);
+    static bool setOutputsFriendlyNames(const int slots[], const int ports[], const char *friendlyNames[], int count);
 
-    static void getFriendlyNames(JsonObject &dest);
+    static void getOutputsFriendlyNames(JsonObject &dest);
+
+    static bool loadTimingsConfig();
+
+    static bool saveTimingsConfig(const JsonObject &timingsConfig);
+
+    static JsonObject getTimingsConfig();
+
+    static long getFlashRateMs();
+
+    static long getAllRedTimeMs();
+
+    static long getNetworkStartupTimeoutMs();
+
+    static bool setFlashRateMs(long flashRateMs);
+
+    static bool setAllRedTimeMs(long allRedTimeMs);
+
+    static bool setNetworkStartupTimeoutMs(long networkStartupTimeoutMs);
+
+    static bool setTimingsConfig(const JsonObject &timingsConfig);
+
+    static bool setTimingsConfig(long flashRateMs, long allRedTimeMs, long networkStartupTimeoutMs);
 
 
 private:
-    static bool loadConfigFile(const char *filename, DynamicJsonDocument &doc);
+    static inline DynamicJsonDocument outputsDoc = DynamicJsonDocument(DYNAMIC_JSON_DOC_SIZE);
 
-    static bool saveConfigFile(const char *filename, const DynamicJsonDocument &doc);
-
-    static DynamicJsonDocument outputsDoc;
+    static inline DynamicJsonDocument timingsDoc = DynamicJsonDocument(DYNAMIC_JSON_DOC_SIZE);
 };
+
+#endif // CONFIGURATION_MANAGER_H

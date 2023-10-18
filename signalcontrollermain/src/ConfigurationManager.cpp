@@ -1,50 +1,29 @@
 #include "ConfigurationManager.h"
 #include "Constants.h"
+#include "FileUtility.h"
 
-DynamicJsonDocument ConfigurationManager::outputsDoc(512); // Increase size if necessary
-
-void ConfigurationManager::init() {
-    SD.begin(SDCARD_SS_PIN);
-    loadOutputsConfig();
-}
-
-bool ConfigurationManager::loadConfigFile(const char *filename, DynamicJsonDocument &doc) {
-    File file = SD.open(filename, FILE_READ);
-    if (!file) {
-        return false;
-    }
-    DeserializationError error = deserializeJson(doc, file);
-    file.close();
-    doc.shrinkToFit();  // minimize memory footprint
-    return error == DeserializationError::Ok;
-}
-
-bool ConfigurationManager::saveConfigFile(const char *filename, const DynamicJsonDocument &doc) {
-    File file = SD.open(filename, FILE_WRITE);
-    if (!file) {
-        return false;
-    }
-    serializeJson(doc, file);
-    file.close();
-    return true;
+bool ConfigurationManager::init() {
+    bool success = SD.begin(SDCARD_SS_PIN);
+    success &= loadOutputsConfig();
+    success &= loadTimingsConfig();
+    return success;
 }
 
 bool ConfigurationManager::loadOutputsConfig() {
-    return loadConfigFile(OUTPUTS_CONFIG_FILE_NAME, outputsDoc);
+    return FileUtility::readJsonFromFile(OUTPUTS_CONFIG_FILE_NAME, outputsDoc);
 }
 
 bool ConfigurationManager::saveOutputsConfig(const JsonObject &outputsConfig) {
-    DynamicJsonDocument newDoc(512);
+    DynamicJsonDocument newDoc(DYNAMIC_JSON_DOC_SIZE);
     newDoc.as<JsonObject>().set(outputsConfig);
-    return saveConfigFile(OUTPUTS_CONFIG_FILE_NAME, newDoc);
+    return FileUtility::writeJsonToFile(OUTPUTS_CONFIG_FILE_NAME, newDoc);
 }
 
 JsonObject ConfigurationManager::getOutputsConfig() {
-
     return outputsDoc.as<JsonObject>();
 }
 
-bool ConfigurationManager::setFriendlyName(int slot, int port, const char *friendlyName) {
+bool ConfigurationManager::setOutputFriendlyName(int slot, int port, const char *friendlyName) {
     JsonObject slotObj = outputsDoc[String(slot)];
     if (friendlyName == nullptr || strlen(friendlyName) == 0) {
         slotObj.remove(String(port));
@@ -54,19 +33,80 @@ bool ConfigurationManager::setFriendlyName(int slot, int port, const char *frien
     return saveOutputsConfig(outputsDoc.as<JsonObject>());
 }
 
-const char *ConfigurationManager::getFriendlyName(int slot, int port) {
+const char *ConfigurationManager::getOutputFriendlyName(int slot, int port) {
     return outputsDoc[String(slot)][String(port)];
 }
 
-bool ConfigurationManager::setMultipleFriendlyNames(const int slots[], const int ports[], const char *friendlyNames[],
-                                                    int count) {
+bool ConfigurationManager::setOutputsFriendlyNames(const int slots[], const int ports[], const char *friendlyNames[],
+                                                   int count) {
     for (int i = 0; i < count; i++) {
-        setFriendlyName(slots[i], ports[i], friendlyNames[i]);
+        setOutputFriendlyName(slots[i], ports[i], friendlyNames[i]);
     }
     return saveOutputsConfig(outputsDoc.as<JsonObject>());
 }
 
-void ConfigurationManager::getFriendlyNames(JsonObject &dest) {
+void ConfigurationManager::getOutputsFriendlyNames(JsonObject &dest) {
     dest = outputsDoc.as<JsonObject>();
 }
 
+bool ConfigurationManager::loadTimingsConfig() {
+    bool success = FileUtility::readJsonFromFile(TIMINGS_CONFIG_FILE_NAME, timingsDoc);
+    if (success && !timingsDoc.containsKey(TIMINGS_CONFIG_FLASH_RATE_MS_KEY)) {
+        success = false;
+    } else if (success && !timingsDoc.containsKey(TIMINGS_CONFIG_ALL_RED_TIME_MS_KEY)) {
+        success = false;
+    } else if (success && !timingsDoc.containsKey(TIMINGS_CONFIG_NETWORK_STARTUP_TIMEOUT_MS_KEY)) {
+        success = false;
+    }
+    return success;
+}
+
+bool ConfigurationManager::saveTimingsConfig(const JsonObject &timingsConfig) {
+    DynamicJsonDocument newDoc(DYNAMIC_JSON_DOC_SIZE);
+    newDoc.as<JsonObject>().set(timingsConfig);
+    return FileUtility::writeJsonToFile(TIMINGS_CONFIG_FILE_NAME, newDoc);
+}
+
+JsonObject ConfigurationManager::getTimingsConfig() {
+    return outputsDoc.as<JsonObject>();
+}
+
+long ConfigurationManager::getFlashRateMs() {
+    return outputsDoc[TIMINGS_CONFIG_FLASH_RATE_MS_KEY];
+}
+
+long ConfigurationManager::getAllRedTimeMs() {
+    return outputsDoc[TIMINGS_CONFIG_ALL_RED_TIME_MS_KEY];
+}
+
+long ConfigurationManager::getNetworkStartupTimeoutMs() {
+    return outputsDoc[TIMINGS_CONFIG_NETWORK_STARTUP_TIMEOUT_MS_KEY];
+}
+
+bool ConfigurationManager::setFlashRateMs(long flashRateMs) {
+    outputsDoc[TIMINGS_CONFIG_FLASH_RATE_MS_KEY] = flashRateMs;
+    return saveTimingsConfig(outputsDoc.as<JsonObject>());
+}
+
+bool ConfigurationManager::setAllRedTimeMs(long allRedTimeMs) {
+    outputsDoc[TIMINGS_CONFIG_ALL_RED_TIME_MS_KEY] = allRedTimeMs;
+    return saveTimingsConfig(outputsDoc.as<JsonObject>());
+}
+
+bool ConfigurationManager::setNetworkStartupTimeoutMs(long networkStartupTimeoutMs) {
+    outputsDoc[TIMINGS_CONFIG_NETWORK_STARTUP_TIMEOUT_MS_KEY] = networkStartupTimeoutMs;
+    return saveTimingsConfig(outputsDoc.as<JsonObject>());
+}
+
+bool ConfigurationManager::setTimingsConfig(const JsonObject &timingsConfig) {
+    DynamicJsonDocument newDoc(DYNAMIC_JSON_DOC_SIZE);
+    newDoc.as<JsonObject>().set(timingsConfig);
+    return saveTimingsConfig(newDoc.as<JsonObject>());
+}
+
+bool ConfigurationManager::setTimingsConfig(long flashRateMs, long allRedTimeMs, long networkStartupTimeoutMs) {
+    outputsDoc[TIMINGS_CONFIG_FLASH_RATE_MS_KEY] = flashRateMs;
+    outputsDoc[TIMINGS_CONFIG_ALL_RED_TIME_MS_KEY] = allRedTimeMs;
+    outputsDoc[TIMINGS_CONFIG_NETWORK_STARTUP_TIMEOUT_MS_KEY] = networkStartupTimeoutMs;
+    return saveTimingsConfig(outputsDoc.as<JsonObject>());
+}

@@ -264,7 +264,7 @@ void setup() {
   setPointPower(LOW, slot_secondYellow, point_secondYellow);
   setPointPower(LOW, slot_secondGreen, point_secondGreen);
   bool ethernetWaitAlternatingFlash = true;
-  unsigned long ethernetWaitTimeMin = millis() + 15000;
+  unsigned long ethernetWaitTimeMin = millis() + 30000;
   unsigned long ethernetWaitTime = millis() + application_ethernetWaitMs;
   while (millis() < ethernetWaitTimeMin || Ethernet.linkStatus() != LinkON) {
     if (ethernetWaitAlternatingFlash) {

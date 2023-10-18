@@ -1,0 +1,21 @@
+{
+  "modeName": "Flash (Standard)",
+  "phases": [
+    {
+      "name": "Flash On",
+      "minDuration": 0.5,
+      "maxDuration": 0.5,
+      "slots": {
+        "1": [
+          3,
+          7
+        ]
+      }
+    },
+    {
+      "name": "Flash Off",
+      "minDuration": 0.5,
+      "maxDuration": 0.5
+    }
+  ]
+}

@@ -1,3 +1,5 @@
 {
-
+  "flashRateMs": 500,
+  "allRedTimeMs": 3000,
+  "networkStartupTimeoutMs": 120000
 }

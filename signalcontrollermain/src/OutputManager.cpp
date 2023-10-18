@@ -3,13 +3,15 @@
 #include "OutputManager.h"
 #include "Logger.h"
 
-void OutputManager::init() {
+bool OutputManager::init() {
     // Initialize P1AM
     while (!P1.init()) {
         Logger::info(Logger::Type::STARTUP,
                      "P1AM not initialized. Checking again in 1 second...");
         delay(1000);
     }
+
+    return true;
 }
 
 void OutputManager::setOutput(boolean power, int slot, int point) {

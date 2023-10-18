@@ -6,14 +6,14 @@
 
 class OutputManager {
 public:
-    static void init();
+    static bool init();
 
-    void setOutput(boolean power, int slot, int point);
+    static void setOutput(boolean power, int slot, int point);
 
-    boolean getOutput(int slot, int point);
+    static boolean getOutput(int slot, int point);
 
 private:
-    static inline boolean state_powerStatus[SLOT_COUNT][PORT_COUNT] = {}; // Inline definition and initialization.
+    static inline boolean state_powerStatus[SLOT_COUNT][PORT_COUNT] = {};
 };
 
 #endif // OUTPUT_MANAGER_H
