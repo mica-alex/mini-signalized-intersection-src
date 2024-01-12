@@ -3,8 +3,7 @@
 #include "FileUtility.h"
 
 bool ConfigurationManager::init() {
-    bool success = SD.begin(SDCARD_SS_PIN);
-    success &= loadOutputsConfig();
+    bool success = loadOutputsConfig();
     success &= loadTimingsConfig();
     return success;
 }
@@ -20,6 +19,28 @@ bool ConfigurationManager::saveOutputsConfig(const JsonObject &outputsConfig) {
 }
 
 JsonObject ConfigurationManager::getOutputsConfig() {
+    return outputsDoc.as<JsonObject>();
+}
+
+bool ConfigurationManager::loadTimingsConfig() {
+    bool success = FileUtility::readJsonFromFile(TIMINGS_CONFIG_FILE_NAME, timingsDoc);
+    if (success && !timingsDoc.containsKey(TIMINGS_CONFIG_FLASH_RATE_MS_KEY)) {
+        success = false;
+    } else if (success && !timingsDoc.containsKey(TIMINGS_CONFIG_ALL_RED_TIME_MS_KEY)) {
+        success = false;
+    } else if (success && !timingsDoc.containsKey(TIMINGS_CONFIG_NETWORK_STARTUP_TIMEOUT_MS_KEY)) {
+        success = false;
+    }
+    return success;
+}
+
+bool ConfigurationManager::saveTimingsConfig(const JsonObject &timingsConfig) {
+    DynamicJsonDocument newDoc(DYNAMIC_JSON_DOC_SIZE);
+    newDoc.as<JsonObject>().set(timingsConfig);
+    return FileUtility::writeJsonToFile(TIMINGS_CONFIG_FILE_NAME, newDoc);
+}
+
+JsonObject ConfigurationManager::getTimingsConfig() {
     return outputsDoc.as<JsonObject>();
 }
 
@@ -47,28 +68,6 @@ bool ConfigurationManager::setOutputsFriendlyNames(const int slots[], const int 
 
 void ConfigurationManager::getOutputsFriendlyNames(JsonObject &dest) {
     dest = outputsDoc.as<JsonObject>();
-}
-
-bool ConfigurationManager::loadTimingsConfig() {
-    bool success = FileUtility::readJsonFromFile(TIMINGS_CONFIG_FILE_NAME, timingsDoc);
-    if (success && !timingsDoc.containsKey(TIMINGS_CONFIG_FLASH_RATE_MS_KEY)) {
-        success = false;
-    } else if (success && !timingsDoc.containsKey(TIMINGS_CONFIG_ALL_RED_TIME_MS_KEY)) {
-        success = false;
-    } else if (success && !timingsDoc.containsKey(TIMINGS_CONFIG_NETWORK_STARTUP_TIMEOUT_MS_KEY)) {
-        success = false;
-    }
-    return success;
-}
-
-bool ConfigurationManager::saveTimingsConfig(const JsonObject &timingsConfig) {
-    DynamicJsonDocument newDoc(DYNAMIC_JSON_DOC_SIZE);
-    newDoc.as<JsonObject>().set(timingsConfig);
-    return FileUtility::writeJsonToFile(TIMINGS_CONFIG_FILE_NAME, newDoc);
-}
-
-JsonObject ConfigurationManager::getTimingsConfig() {
-    return outputsDoc.as<JsonObject>();
 }
 
 long ConfigurationManager::getFlashRateMs() {
